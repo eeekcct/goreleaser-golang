@@ -56,7 +56,7 @@ jobs:
           set -euo pipefail
 
           checksum_file=$(echo "$ARTIFACTS" | jq -r '.[] | select (.type=="Checksum") | .path')
-          echo "hashes=$(cat $checksum_file | base64 -w0)" >> "$GITHUB_OUTPUT"
+          echo "hashes=$(cat "$checksum_file" | base64 -w0)" >> "$GITHUB_OUTPUT"
       - uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
         with:
           subject-path: |
@@ -96,7 +96,7 @@ jobs:
           # shellcheck disable=SC2153
           checksums=$(echo "$CHECKSUMS" | base64 -d)
           while read -r line; do
-            fn=$(echo $line | cut -d ' ' -f2)
+            fn=$(echo "$line" | cut -d ' ' -f2)
             echo "Downloading $fn"
             gh -R "$GITHUB_REPOSITORY" release download "$GITHUB_REF_NAME" -p "$fn"
           done <<<"$checksums"
