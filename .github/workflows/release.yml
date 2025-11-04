@@ -51,7 +51,7 @@ jobs:
       - name: Generate binary hashes
         id: binary
         env:
-          ARTIFACTS: ${{ steps.goreleaser.outputs.artifacts }}
+          ARTIFACTS: "${{ steps.goreleaser.outputs.artifacts }}"
         run: |
           set -euo pipefail
 
