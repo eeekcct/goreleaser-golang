@@ -82,14 +82,13 @@ jobs:
   binary-verify:
     needs: [goreleaser, binary-provenance]
     runs-on: ubuntu-latest
-    env:
-      CHECKSUMS: ${{ needs.goreleaser.outputs.hashes }}
-      PROVENANCE: ${{ needs.binary-provenance.outputs.provenance-name }}
     steps:
       - name: Install SLSA verifier
         uses: slsa-framework/slsa-verifier/actions/installer@ea584f4502babc6f60d9bc799dbbb13c1caa9ee6 # v2.7.1
       - name: Download assets
         env:
+          CHECKSUMS: ${{ needs.goreleaser.outputs.hashes }}
+          PROVENANCE: ${{ needs.binary-provenance.outputs.provenance-name }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
@@ -102,6 +101,9 @@ jobs:
           echo "Downloading provenance $PROVENANCE"
           gh -R "$GITHUB_REPOSITORY" release download "$GITHUB_REF_NAME" -p "$PROVENANCE"
       - name: Verify assets
+        env:
+          CHECKSUMS: ${{ needs.goreleaser.outputs.hashes }}
+          PROVENANCE: ${{ needs.binary-provenance.outputs.provenance-name }}
         run: |
           set -euo pipefail
           checksums=$(echo "$CHECKSUMS" | base64 -d)
