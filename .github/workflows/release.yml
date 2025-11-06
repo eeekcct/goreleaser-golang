@@ -84,11 +84,23 @@ jobs:
       upload-assets: true # upload to a new release
       draft-release: ${{ inputs.draft }} # keep as draft until verified
 
-  binary-verify:
-    needs: [goreleaser, binary-provenance]
+  publish-release:
+    if: ${{ inputs.release }}
+    needs: [binary-provenance]
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
+    steps:
+      - name: Publish release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh -R "$GITHUB_REPOSITORY" release edit "$GITHUB_REF_NAME" --draft=false
+
+  binary-verify:
+    if: ${{ !inputs.draft || inputs.release }}
+    needs: [goreleaser, binary-provenance, publish-release]
+    runs-on: ubuntu-latest
     env:
       CHECKSUMS: ${{ needs.goreleaser.outputs.hashes }}
       PROVENANCE: ${{ needs.binary-provenance.outputs.provenance-name }}
@@ -122,16 +134,3 @@ jobs:
                                           --source-tag "$GITHUB_REF_NAME" \
                                           "$fn"
           done <<<"$checksums"
-
-  publish-release:
-    if: ${{ inputs.release }}
-    needs: [binary-verify]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Publish release
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          gh -R "$GITHUB_REPOSITORY" release edit "$GITHUB_REF_NAME" --draft=false
