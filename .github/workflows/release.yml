@@ -85,7 +85,7 @@ jobs:
       draft-release: ${{ inputs.draft }} # keep as draft until verified
 
   publish-release:
-    if: ${{ inputs.release }}
+    if: ${{ inputs.draft && inputs.release }}
     needs: [binary-provenance]
     runs-on: ubuntu-latest
     permissions:
