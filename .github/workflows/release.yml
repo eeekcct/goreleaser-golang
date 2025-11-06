@@ -87,6 +87,8 @@ jobs:
   binary-verify:
     needs: [goreleaser, binary-provenance]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     env:
       CHECKSUMS: ${{ needs.goreleaser.outputs.hashes }}
       PROVENANCE: ${{ needs.binary-provenance.outputs.provenance-name }}
