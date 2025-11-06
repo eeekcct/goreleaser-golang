@@ -3,6 +3,14 @@ name: goreleaser golang
 on:
   workflow_call:
     inputs:
+      draft:
+        required: false
+        type: boolean
+        default: true
+      release:
+        required: false
+        type: boolean
+        default: true
       go-version:
         required: false
         type: string
@@ -74,6 +82,7 @@ jobs:
     with:
       base64-subjects: ${{ needs.goreleaser.outputs.hashes }}
       upload-assets: true # upload to a new release
+      draft-release: ${{ inputs.draft }} # keep as draft until verified
 
   binary-verify:
     needs: [goreleaser, binary-provenance]
@@ -111,3 +120,16 @@ jobs:
                                           --source-tag "$GITHUB_REF_NAME" \
                                           "$fn"
           done <<<"$checksums"
+
+  publish-release:
+    if: ${{ inputs.release }}
+    needs: [binary-verify]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Publish release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh -R "$GITHUB_REPOSITORY" release edit "$GITHUB_REF_NAME" --draft=false
