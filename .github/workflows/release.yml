@@ -98,7 +98,7 @@ jobs:
           gh -R "$GITHUB_REPOSITORY" release edit "$GITHUB_REF_NAME" --draft=false
 
   binary-verify:
-    if: ${{ !inputs.draft || inputs.release }}
+    if: ${{ (!inputs.draft || inputs.release) && ! failure() }}
     needs: [goreleaser, binary-provenance, publish-release]
     runs-on: ubuntu-latest
     env:
